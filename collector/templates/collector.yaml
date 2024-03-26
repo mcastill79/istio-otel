@@ -1,0 +1,128 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ .Values.nameOverride }}
+  namespace: otel-system
+spec:
+  mode: {{ .Values.mode }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  autoscaler:
+{{ toYaml .Values.autoscaling.autoscaler | indent 4 }}
+  resources:
+{{ toYaml .Values.autoscaling.resources | indent 4 }}
+  targetAllocator:
+    enabled: true
+    serviceAccount: {{ .Values.nameOverride }}
+  serviceAccount: {{ .Values.nameOverride }}
+  config: |
+    extensions:
+      health_check: {}
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      prometheus:
+{{ tpl (toYaml .Values.config.receivers.prometheus) . | indent 8 }}
+    exporters:
+      otlphttp:
+        endpoint: https://staging-otlp.nr-data.net:443
+        tls:
+          insecure: false
+        headers:
+          api-key: ${NEW_RELIC_LICENSE_KEY}
+        compression: zstd
+    processors:
+      {{- if .Values.config.processors.k8sattributes.enable }}
+      k8sattributes:
+        passthrough: false
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.deployment.name
+            - k8s.statefulset.name
+            - k8s.daemonset.name
+            - k8s.cronjob.name
+            - k8s.job.name
+            - k8s.node.name
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.pod.start_time
+          annotations:
+            - tag_name: k8s.cluster.name
+              key: cluster.x-k8s.io/cluster-name
+              from: node
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.uid
+          - sources:
+              - from: connection
+      {{- end }}
+      {{- if .Values.config.processors.memory_limiter.enable }}
+      memory_limiter:
+        check_interval: {{ .Values.config.processors.memory_limiter.check_interval }}
+        limit_percentage:  {{ .Values.config.processors.memory_limiter.limit_percentage }}
+        spike_limit_percentage:  {{ .Values.config.processors.memory_limiter.spike_limit_percentage }}
+      {{- end }}
+      {{- if .Values.config.processors.batch.enable }}
+      batch:
+        send_batch_size: {{ .Values.config.processors.batch.send_batch_size }}
+        send_batch_max_size: {{ .Values.config.processors.batch.send_batch_max_size }}
+        timeout: {{ .Values.config.processors.batch.timeout }}
+      {{- end }}
+      resource:
+        attributes:
+          - key: k8s.cluster.name
+            value: minikube
+            action: insert
+          - key: clusterName
+            value: minikube
+            action: insert
+          - key: label.environment
+            value: test
+            action: insert
+    service:
+      extensions:
+      - health_check
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors:
+            - k8sattributes
+            - memory_limiter
+            - batch
+            - resource
+          exporters: [otlp]
+        metrics:
+          receivers:
+            - prometheus
+          processors:
+            {{- if .Values.config.processors.k8sattributes.enable }}
+            - k8sattributes
+            {{- end }}
+            {{- if .Values.config.processors.memory_limiter.enable }}
+            - memory_limiter
+            {{- end }}
+            {{- if .Values.config.processors.batch.enable }}
+            - batch
+            {{- end }}
+            - resource
+          exporters: [ otlphttp ]
+  env:
+    - name: NEW_RELIC_LICENSE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: nr-key
+          key: NEW_RELIC_LICENSE_KEY
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP

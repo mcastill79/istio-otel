@@ -1,0 +1,78 @@
+nameOverride: "otel-collector"
+fullnameOverride: "otel-collector"
+mode: "statefulset"
+nodeTelemetry: false
+useGOMEMLIMIT: true
+exporter_type: otlphttp
+
+otlpEndpoint: "staging-otlp.nr-data.net:4317"
+hostNetwork: false
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 2
+  autoscaler:
+    targetCPUUtilization: 60
+    targetMemoryUtilization: 60
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 300
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+config:
+  receivers:
+    prometheus:
+      config:
+        global:
+          scrape_interval: 1m
+          scrape_timeout: 10s
+          evaluation_interval: 1m
+        scrape_configs:
+          - job_name: 'envoy-stats'
+            metrics_path: /stats/prometheus
+            kubernetes_sd_configs:
+            - role: pod
+            relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
+              action: keep
+              regex: '.*-envoy-prom'
+            - source_labels: [__meta_kubernetes_pod_phase]
+              action: keep
+              regex: Running
+          - job_name: "istiod"
+            kubernetes_sd_configs:
+            - role: endpoints
+              namespaces:
+                names:
+                - istio-system
+            relabel_configs:
+            - source_labels: [__meta_kubernetes_endpoint_port_name]
+              action: keep
+              regex: http-monitoring
+          - job_name: "otel-stats"
+            kubernetes_sd_configs:
+            - role: endpoints
+              namespaces:
+                names:
+                - otel-system
+            relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              action: keep
+              regex: '.*otel.*'
+  processors:
+    memory_limiter:
+      enable: true
+      check_interval: 1s
+      limit_percentage: 80
+      spike_limit_percentage: 20
+    batch:
+      enable: true
+      send_batch_size: 8192
+      send_batch_max_size: 0
+      timeout: 200ms
+    k8sattributes:
+      enable: true
