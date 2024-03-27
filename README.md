@@ -1,4 +1,4 @@
-# Enable New Relic Observability of Istio Metrics and Traces wuth Otel
+# Enable New Relic Observability of Istio Metrics and Traces with Otel
 
 This repo contains the assets to deploy an otel operator, a target allocator and the otel collector, to scrape istio metrics, process Istio traces and export them to New Relic
 
