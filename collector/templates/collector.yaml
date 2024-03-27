@@ -29,7 +29,7 @@ spec:
 {{ tpl (toYaml .Values.config.receivers.prometheus) . | indent 8 }}
     exporters:
       otlphttp:
-        endpoint: https://staging-otlp.nr-data.net:443
+        endpoint: https://otlp.nr-data.net:443
         tls:
           insecure: false
         headers:
