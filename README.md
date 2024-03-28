@@ -3,8 +3,11 @@
 This repo contains the assets to deploy an otel operator, a target allocator and the otel collector, to scrape istio metrics, process Istio traces and export both to New Relic
 
 ```
-Some of the sections here are as a reference only (i.e. Installation of Minikube, Installation of Istio, Demo profile and sample application). They provide the information on the required Istio configuration.
+Some of the sections here are as a reference only (i.e. Installation of Minikube, Installation of Istio, Demo profile and sample application). 
+They provide the information on the required Istio configuration.
+
 Summary of the steps to implement the Otel collector:
+
 1. k apply -f https://github.com/jetstack/cert-manager/releases/download/v1.14.4/cert-manager.yaml
 2. k create ns otel-system
 3. kns otel-system
