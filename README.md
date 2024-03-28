@@ -10,7 +10,7 @@ Summary of the steps to implement the Otel collector:
 
 1. k apply -f https://github.com/jetstack/cert-manager/releases/download/v1.14.4/cert-manager.yaml
 2. k create ns otel-system
-3. kns otel-system
+3. kubectl config set-context --current --namespace=otel-system
 4. kubectl label namespace otel-system istio-injection=disabled
 5. helm install my-opentelemetry-operator open-telemetry/opentelemetry-operator  -n otel-system
 6. k create secret generic nr-key --from-literal=NEW_RELIC_LICENSE_KEY=xxxxxxxx -n otel-system
