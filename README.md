@@ -4,8 +4,8 @@ This repo contains an example of the assets required to deploy an otel operator,
 to scrape istio metrics, process Istio traces and export both to New Relic. 
 
 ```
-Some of the sections here are as a reference only (i.e. Installation of Minikube, Installation of Istio, Demo profile and sample application). 
-They provide the information on the required Istio configuration.
+Some of the sections here are as a reference only (i.e. Installation of Minikube, Installation of Istio, 
+Demo profile and sample application). They provide the information on the required Istio configuration.
 
 Summary of the steps to implement the Otel collector:
 
