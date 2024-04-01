@@ -5,7 +5,7 @@ nodeTelemetry: false
 useGOMEMLIMIT: true
 exporter_type: otlphttp
 
-otlpEndpoint: "staging-otlp.nr-data.net:4317"
+otlpEndpoint: "otlp.nr-data.net:4317"
 hostNetwork: false
 autoscaling:
   minReplicas: 1

@@ -1,6 +1,7 @@
 # Enable New Relic Observability of Istio Metrics and Traces with Otel
 
-This repo contains the assets to deploy an otel operator, a target allocator and the otel collector, to scrape istio metrics, process Istio traces and export both to New Relic
+This repo contains an example of the assets required to deploy an otel operator, a target allocator and the otel collector, 
+to scrape istio metrics, process Istio traces and export both to New Relic. 
 
 ```
 Some of the sections here are as a reference only (i.e. Installation of Minikube, Installation of Istio, Demo profile and sample application). 
@@ -8,12 +9,12 @@ They provide the information on the required Istio configuration.
 
 Summary of the steps to implement the Otel collector:
 
-1. k apply -f https://github.com/jetstack/cert-manager/releases/download/v1.14.4/cert-manager.yaml
-2. k create ns otel-system
+1. kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.14.4/cert-manager.yaml
+2. kubectl create ns otel-system
 3. kubectl config set-context --current --namespace=otel-system
 4. kubectl label namespace otel-system istio-injection=disabled
 5. helm install my-opentelemetry-operator open-telemetry/opentelemetry-operator  -n otel-system
-6. k create secret generic nr-key --from-literal=NEW_RELIC_LICENSE_KEY=xxxxxxxx -n otel-system
+6. kubectl create secret generic nr-key --from-literal=NEW_RELIC_LICENSE_KEY=xxxxxxxx -n otel-system
 7. cd collector
 8. helm install otel-collector -f values.yaml . -n otel-system
 ```
