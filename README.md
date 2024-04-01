@@ -86,7 +86,7 @@ istiod-75685b54d6-jvrhl                 1/1     Running   0          71s
 
 $kubectl label namespace default istio-injection=enabled
 namespace/default labeled
-$k apply -f istio-1.21.0/samples/bookinfo/platform/kube/bookinfo.yaml
+$kubectl apply -f istio-1.21.0/samples/bookinfo/platform/kube/bookinfo.yaml
 service/details created
 serviceaccount/bookinfo-details created
 deployment.apps/details-v1 created
@@ -117,7 +117,7 @@ $kubectl exec "$(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata
 ### Install cert-manager ( dependency to run otel target allocator+collector )
 
 ```
-$k apply -f https://github.com/jetstack/cert-manager/releases/download/v1.14.4/cert-manager.yaml
+$kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.14.4/cert-manager.yaml
 namespace/cert-manager created
 customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
 customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
@@ -165,7 +165,7 @@ deployment.apps/cert-manager-webhook created
 mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
 validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
 
-$k get pods -n cert-manager
+$kubectl get pods -n cert-manager
 NAME                                       READY   STATUS    RESTARTS   AGE
 cert-manager-67c98b89c8-k5n2q              1/1     Running   0          34s
 cert-manager-cainjector-5c5695d979-59wp7   1/1     Running   0          34s
@@ -176,7 +176,7 @@ cert-manager-webhook-7f9f8648b9-44j5q      1/1     Running   0          34s
 ### Install otel operator and put everything in otel-system ns
 
 ```
-$k create ns otel-system
+$kubectl create ns otel-system
 namespace/otel-system created
 
 $kubectl label namespace otel-system istio-injection=disabled
@@ -194,11 +194,11 @@ opentelemetry-operator has been installed. Check its status by running:
 
 Visit https://github.com/open-telemetry/opentelemetry-operator for instructions on how to create & configure OpenTelemetryCollector and Instrumentation custom resources by using the Operator.
 
-$k get pods -n otel-system
+$kubectl get pods -n otel-system
 NAME                                         READY   STATUS    RESTARTS   AGE
 my-opentelemetry-operator-674cf94667-s76ts   2/2     Running   0          22s
 
-$k create secret generic nr-key --from-literal=NEW_RELIC_LICENSE_KEY=xxxxxxxxxxxxxxxxxx -n otel-system
+$kubectl create secret generic nr-key --from-literal=NEW_RELIC_LICENSE_KEY=xxxxxxxxxxxxxxxxxx -n otel-system
 secret/nr-key created
 
 $cd collector/
@@ -211,7 +211,7 @@ STATUS: deployed
 REVISION: 1
 TEST SUITE: None
 
-$k get pods -n otel-system
+$kubectl get pods -n otel-system
 NAME                                             READY   STATUS    RESTARTS   AGE
 my-opentelemetry-operator-674cf94667-s76ts       2/2     Running   0          6m45s
 otel-collector-collector-0                       1/1     Running   0          2m14s
